@@ -1,21 +1,28 @@
+import React from "react";
 import { useState, useEffect } from "react";
-import { STOCK_UNIVERSE, DEFAULT_WATCHLIST } from "../../data/stocks";
+import { DEFAULT_WATCHLIST } from "../../data/stocks";
 import { useLivePrices } from "../../hooks/useLivePrices";
 import Watchlist from "./Watchlist";
 import ChartPanel from "./ChartPanel";
 import Fundamentals from "./Fundamentals";
 
 export default function TradingDashboard() {
-  const [selected, setSelected]   = useState("AAPL");
+  const [selected,  setSelected]  = useState("AAPL");
   const [timeframe, setTimeframe] = useState("1Y");
   const [watchlist, setWatchlist] = useState(DEFAULT_WATCHLIST);
 
-  const prices = useLivePrices();
+  // Live prices stream only for tickers currently in watchlist + selected
+  const tickersToStream = [...new Set([...watchlist, selected])];
+  const prices = useLivePrices(tickersToStream);
 
   // Read ticker from URL hash → enables share links
   useEffect(() => {
     const hash = window.location.hash.replace("#", "").toUpperCase();
-    if (hash && STOCK_UNIVERSE[hash]) setSelected(hash);
+    if (hash) {
+      setSelected(hash);
+      // Also add to watchlist if not already there
+      setWatchlist((w) => w.includes(hash) ? w : [...w, hash]);
+    }
   }, []);
 
   const addToWatchlist      = (ticker) => setWatchlist((w) => w.includes(ticker) ? w : [...w, ticker]);
@@ -50,7 +57,11 @@ export default function TradingDashboard() {
         prices={prices}
         watchlist={watchlist}
         isInWatchlist={isInWatchlist(selected)}
-        onSelect={setSelected}
+        onSelect={(ticker) => {
+          setSelected(ticker);
+          // Start streaming this ticker immediately
+          setWatchlist((w) => w); // trigger re-render so tickersToStream updates
+        }}
         onTimeframe={setTimeframe}
         onAddToWatchlist={addToWatchlist}
         onRemoveFromWatchlist={removeFromWatchlist}

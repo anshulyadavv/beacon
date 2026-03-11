@@ -1,4 +1,15 @@
-import { STOCKS } from "../data/stocks";
+// Fallback prices used only for mock chart generation before real data loads.
+const FALLBACK_PRICES = {
+  AAPL: { price: 178.72, changePct: 1.43 },
+  NVDA: { price: 875.28, changePct: 3.12 },
+  TSLA: { price: 175.34, changePct: -2.10 },
+  MSFT: { price: 416.42, changePct: 0.85 },
+  PLTR: { price: 24.31,  changePct: -0.45 },
+};
+const DEFAULT_STOCK = { price: 150, changePct: 1.0 };
+function getStock(ticker) { return FALLBACK_PRICES[ticker] ?? DEFAULT_STOCK; }
+
+
 
 /**
  * Seeded pseudo-random number generator — deterministic per ticker+timeframe.
@@ -43,7 +54,7 @@ const TIMEFRAME_CONFIG = {
  * Replace with a real OHLCV API fetch when ready.
  */
 export function generateChartData(ticker, timeframe) {
-  const stock = STOCKS[ticker];
+  const stock = getStock(ticker);
   const cfg = TIMEFRAME_CONFIG[timeframe] ?? TIMEFRAME_CONFIG["1Y"];
   const { points, volatility, drift, startOffset } = cfg;
 

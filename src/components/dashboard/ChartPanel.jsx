@@ -1,5 +1,8 @@
+import React from "react";
 import { useState, useRef, useEffect, useCallback } from "react";
-import { STOCK_UNIVERSE, TIMEFRAMES } from "../../data/stocks";
+import { TIMEFRAMES } from "../../data/stocks";
+import { useStockSearch } from "../../hooks/useStockSearch";
+import { useStockData } from "../../hooks/useStockData";
 import Chart from "./Chart";
 
 function ShareToast({ visible }) {
@@ -29,39 +32,28 @@ export default function ChartPanel({
   onSelect, onTimeframe,
   onAddToWatchlist, onRemoveFromWatchlist,
 }) {
-  const [query, setQuery]         = useState("");
-  const [focused, setFocused]     = useState(false);
+  const [query,     setQuery]     = useState("");
+  const [focused,   setFocused]   = useState(false);
   const [showToast, setShowToast] = useState(false);
   const inputRef                  = useRef(null);
-  const dropdownRef               = useRef(null);
   const containerRef              = useRef(null);
 
-  const stock = STOCK_UNIVERSE[selected];
-  const isUp  = livePrice ? livePrice.changePct >= 0 : true;
+  const { results, loading: searching } = useStockSearch(query);
+  const { profile } = useStockData(selected);
+  const showDropdown = focused && (query.trim().length > 0);
+  const isUp = livePrice ? livePrice.changePct >= 0 : true;
 
-  // Filter universe
-  const results = query.trim().length === 0
-    ? []
-    : Object.entries(STOCK_UNIVERSE).filter(([ticker, s]) =>
-        ticker.toLowerCase().includes(query.toLowerCase()) ||
-        s.name.toLowerCase().includes(query.toLowerCase()) ||
-        (s.sector && s.sector.toLowerCase().includes(query.toLowerCase()))
-      ).slice(0, 8);
-
-  const showDropdown = focused && results.length > 0;
-
-  // Close on outside click
+  // Close dropdown on outside click
   useEffect(() => {
     const handler = (e) => {
-      if (
-        containerRef.current && !containerRef.current.contains(e.target)
-      ) setFocused(false);
+      if (containerRef.current && !containerRef.current.contains(e.target))
+        setFocused(false);
     };
     document.addEventListener("mousedown", handler);
     return () => document.removeEventListener("mousedown", handler);
   }, []);
 
-  // ⌘K shortcut
+  // ⌘K / Escape
   useEffect(() => {
     const handler = (e) => {
       if ((e.metaKey || e.ctrlKey) && e.key === "k") {
@@ -69,10 +61,7 @@ export default function ChartPanel({
         inputRef.current?.focus();
         setFocused(true);
       }
-      if (e.key === "Escape") {
-        setFocused(false);
-        setQuery("");
-      }
+      if (e.key === "Escape") { setFocused(false); setQuery(""); }
     };
     document.addEventListener("keydown", handler);
     return () => document.removeEventListener("keydown", handler);
@@ -104,7 +93,7 @@ export default function ChartPanel({
       {/* ── Top bar ── */}
       <div ref={containerRef} style={{ display: "flex", gap: 8, alignItems: "center", flexShrink: 0 }}>
 
-        {/* Search field + dropdown */}
+        {/* Search */}
         <div style={{ position: "relative", flex: 1 }}>
           <div style={{
             display: "flex", alignItems: "center",
@@ -123,7 +112,7 @@ export default function ChartPanel({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
-              placeholder="Search stocks, companies, sectors…"
+              placeholder="Search any stock, ETF, company…"
               style={{
                 background: "transparent", border: "none",
                 color: "#fff", fontFamily: "inherit",
@@ -133,15 +122,13 @@ export default function ChartPanel({
             {query ? (
               <button onClick={() => setQuery("")} style={{
                 background: "none", border: "none", cursor: "pointer",
-                color: "#48484a", fontSize: 18, padding: 0,
-                lineHeight: 1, flexShrink: 0, display: "flex",
+                color: "#48484a", fontSize: 18, padding: 0, lineHeight: 1, flexShrink: 0,
               }}>×</button>
             ) : (
               <kbd style={{
                 color: "#48484a", fontSize: 10,
-                background: "rgba(255,255,255,0.05)",
-                padding: "2px 6px", borderRadius: 5,
-                flexShrink: 0, fontFamily: "inherit",
+                background: "rgba(255,255,255,0.05)", padding: "2px 6px",
+                borderRadius: 5, flexShrink: 0, fontFamily: "inherit",
                 border: "1px solid #2c2c2e",
               }}>⌘K</kbd>
             )}
@@ -157,13 +144,26 @@ export default function ChartPanel({
               boxShadow: "0 20px 60px rgba(0,0,0,0.7)",
               overflow: "hidden",
             }}>
-              {results.map(([ticker, s]) => {
-                const lp = prices[ticker];
-                const up = lp ? lp.changePct >= 0 : true;
-                const inWatch = watchlist?.includes(ticker);
+              {searching && (
+                <div style={{ padding: "12px 14px", fontSize: 12, color: "#48484a" }}>
+                  Searching…
+                </div>
+              )}
+
+              {!searching && results.length === 0 && query.trim().length > 0 && (
+                <div style={{ padding: "12px 14px", fontSize: 12, color: "#48484a" }}>
+                  No results for "{query}"
+                </div>
+              )}
+
+              {results.map((r) => {
+                const lp      = prices[r.ticker];
+                const up      = lp ? lp.changePct >= 0 : true;
+                const inWatch = watchlist?.includes(r.ticker);
+
                 return (
                   <div
-                    key={ticker}
+                    key={r.ticker}
                     style={{
                       display: "flex", alignItems: "center",
                       padding: "9px 14px", cursor: "pointer",
@@ -174,18 +174,18 @@ export default function ChartPanel({
                     onMouseLeave={(e) => e.currentTarget.style.background = "transparent"}
                   >
                     {/* Info */}
-                    <div style={{ flex: 1 }} onClick={() => handleSelect(ticker)}>
+                    <div style={{ flex: 1 }} onClick={() => handleSelect(r.ticker)}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
-                        <span style={{ fontWeight: 600, fontSize: 13, color: "#fff" }}>{ticker}</span>
-                        <span style={{ fontSize: 10, color: "#48484a", letterSpacing: "0.02em" }}>{s.sector}</span>
+                        <span style={{ fontWeight: 600, fontSize: 13, color: "#fff" }}>{r.ticker}</span>
+                        <span style={{ fontSize: 10, color: "#48484a" }}>{r.exchange}</span>
                       </div>
-                      <div style={{ fontSize: 11, color: "#8e8e93", marginTop: 1 }}>{s.name}</div>
+                      <div style={{ fontSize: 11, color: "#8e8e93", marginTop: 1 }}>{r.name}</div>
                     </div>
 
-                    {/* Price */}
+                    {/* Live price (if already streaming) */}
                     {lp && (
                       <div style={{ textAlign: "right", marginRight: 12, flexShrink: 0 }}
-                        onClick={() => handleSelect(ticker)}>
+                        onClick={() => handleSelect(r.ticker)}>
                         <div style={{ fontSize: 12, fontWeight: 500, fontVariantNumeric: "tabular-nums", color: "#e5e5ea" }}>
                           ${lp.price.toFixed(2)}
                         </div>
@@ -197,7 +197,7 @@ export default function ChartPanel({
 
                     {/* Watch toggle */}
                     <button
-                      onClick={(e) => { e.stopPropagation(); inWatch ? onRemoveFromWatchlist(ticker) : onAddToWatchlist(ticker); }}
+                      onClick={(e) => { e.stopPropagation(); inWatch ? onRemoveFromWatchlist(r.ticker) : onAddToWatchlist(r.ticker); }}
                       style={{
                         background: inWatch ? "rgba(255,69,58,0.10)" : "rgba(255,255,255,0.05)",
                         border: `1px solid ${inWatch ? "rgba(255,69,58,0.25)" : "rgba(255,255,255,0.08)"}`,
@@ -212,12 +212,12 @@ export default function ChartPanel({
                   </div>
                 );
               })}
-              <div style={{
-                fontSize: 10, color: "#48484a", padding: "7px 14px",
-                borderTop: "1px solid #1c1c1e", letterSpacing: "0.02em",
-              }}>
-                {results.length} result{results.length !== 1 ? "s" : ""} · Click row to view · "+ Watch" to add to watchlist
-              </div>
+
+              {!searching && results.length > 0 && (
+                <div style={{ fontSize: 10, color: "#48484a", padding: "7px 14px", borderTop: "1px solid #1c1c1e" }}>
+                  Click to view · "+ Watch" to add to watchlist
+                </div>
+              )}
             </div>
           )}
         </div>
@@ -229,27 +229,20 @@ export default function ChartPanel({
             title={`Share ${selected}`}
             style={{
               background: "rgba(255,255,255,0.03)",
-              border: "1px solid #1c1c1e",
-              borderRadius: 12, width: 38, height: 38,
+              border: "1px solid #1c1c1e", borderRadius: 12,
+              width: 38, height: 38,
               display: "flex", alignItems: "center", justifyContent: "center",
               cursor: "pointer", transition: "all 0.18s",
             }}
-            onMouseEnter={(e) => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.07)";
-              e.currentTarget.style.borderColor = "#2c2c2e";
-            }}
-            onMouseLeave={(e) => {
-              e.currentTarget.style.background = "rgba(255,255,255,0.03)";
-              e.currentTarget.style.borderColor = "#1c1c1e";
-            }}
+            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "#2c2c2e"; }}
+            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "#1c1c1e"; }}
           >
-            <svg width="14" height="14" viewBox="0 0 24 24" fill="none"
+            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="#8e8e93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <circle cx="18" cy="5" r="3" />
-              <circle cx="6" cy="12" r="3" />
-              <circle cx="18" cy="19" r="3" />
-              <line x1="8.59" y1="13.51" x2="15.42" y2="17.49" />
-              <line x1="15.41" y1="6.51" x2="8.59" y2="10.49" />
+              {/* iOS share: box with arrow pointing up */}
+              <line x1="12" y1="16" x2="12" y2="4" />
+              <polyline points="8 8 12 4 16 8" />
+              <path d="M8 16H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-3" />
             </svg>
           </button>
           <ShareToast visible={showToast} />
@@ -258,9 +251,9 @@ export default function ChartPanel({
 
       {/* ── Stock header ── */}
       <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
           <h1 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.03em", margin: 0, color: "#fff" }}>
-            {stock?.name}
+            {profile?.name ?? selected}
           </h1>
           <span style={{
             fontSize: 10, fontWeight: 700, color: "#48484a",
@@ -269,12 +262,12 @@ export default function ChartPanel({
           }}>
             {selected}
           </span>
-          {stock?.sector && (
-            <span style={{ fontSize: 11, color: "#48484a" }}>· {stock.sector}</span>
+          {profile?.exchange && (
+            <span style={{ fontSize: 11, color: "#48484a" }}>· {profile.exchange}</span>
           )}
         </div>
 
-        {livePrice && (
+        {livePrice ? (
           <div style={{ textAlign: "right" }}>
             <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
               ${livePrice.price.toFixed(2)}
@@ -283,6 +276,8 @@ export default function ChartPanel({
               {isUp ? "+" : ""}{livePrice.change.toFixed(2)} ({isUp ? "+" : ""}{livePrice.changePct.toFixed(2)}%)
             </div>
           </div>
+        ) : (
+          <div style={{ fontSize: 12, color: "#48484a" }}>Loading…</div>
         )}
       </div>
 
@@ -293,21 +288,16 @@ export default function ChartPanel({
         border: "1px solid #1c1c1e", borderRadius: 16,
         padding: "14px 16px", minHeight: 0, overflow: "hidden",
       }}>
-        {/* Timeframe row + watchlist toggle */}
+        {/* Timeframe + watchlist toggle */}
         <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", marginBottom: 10, flexShrink: 0 }}>
           <div style={{ display: "flex", gap: 1 }}>
             {TIMEFRAMES.map((tf) => (
-              <button
-                key={tf}
-                onClick={() => onTimeframe(tf)}
-                style={{
-                  background: timeframe === tf ? "rgba(255,255,255,0.08)" : "transparent",
-                  border: "none",
-                  color: timeframe === tf ? "#e5e5ea" : "#48484a",
-                  padding: "5px 10px", borderRadius: 7,
-                  fontSize: 12, fontWeight: 500, cursor: "pointer",
-                  transition: "all 0.15s", fontFamily: "inherit",
-                }}
+              <button key={tf} onClick={() => onTimeframe(tf)} style={{
+                background: timeframe === tf ? "rgba(255,255,255,0.08)" : "transparent",
+                border: "none", color: timeframe === tf ? "#e5e5ea" : "#48484a",
+                padding: "5px 10px", borderRadius: 7, fontSize: 12, fontWeight: 500,
+                cursor: "pointer", transition: "all 0.15s", fontFamily: "inherit",
+              }}
                 onMouseEnter={(e) => { if (timeframe !== tf) e.currentTarget.style.color = "#8e8e93"; }}
                 onMouseLeave={(e) => { if (timeframe !== tf) e.currentTarget.style.color = "#48484a"; }}
               >
@@ -320,9 +310,7 @@ export default function ChartPanel({
             onClick={() => isInWatchlist ? onRemoveFromWatchlist(selected) : onAddToWatchlist(selected)}
             style={{
               display: "flex", alignItems: "center", gap: 5,
-              background: "transparent",
-              border: "none",
-              borderRadius: 7, padding: "4px 10px",
+              background: "transparent", border: "none", borderRadius: 7, padding: "4px 10px",
               fontSize: 11, fontWeight: 500, cursor: "pointer",
               color: isInWatchlist ? "#ff453a" : "#48484a",
               transition: "color 0.15s", fontFamily: "inherit",
@@ -331,19 +319,9 @@ export default function ChartPanel({
             onMouseLeave={(e) => { e.currentTarget.style.color = isInWatchlist ? "#ff453a" : "#48484a"; }}
           >
             {isInWatchlist ? (
-              <>
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" />
-                </svg>
-                Remove
-              </>
+              <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>Remove</>
             ) : (
-              <>
-                <svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round">
-                  <line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" />
-                </svg>
-                + Watchlist
-              </>
+              <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>+ Watchlist</>
             )}
           </button>
         </div>

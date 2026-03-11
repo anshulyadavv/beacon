@@ -1,41 +1,42 @@
-import { useState, useEffect } from "react";
-import { STOCK_UNIVERSE } from "../data/stocks";
+import React, { useState, useEffect, useRef, useCallback } from "react";
+import { fetchBatchQuotes } from "./finnhub";
 
-/**
- * Simulates live price ticking for ALL stocks in the universe (not just watchlist).
- * Prices update in the background even for stocks not currently visible,
- * so they're always fresh when selected or added to watchlist.
- *
- * Replace the interval with a WebSocket / SSE feed for real data.
- */
-export function useLivePrices() {
-  const [prices, setPrices] = useState(() =>
-    Object.fromEntries(
-      Object.entries(STOCK_UNIVERSE).map(([ticker, stock]) => [
-        ticker,
-        { price: stock.price, change: stock.change, changePct: stock.changePct },
-      ])
-    )
-  );
+export function useLivePrices(tickers = []) {
+  const [prices, setPrices] = useState({});
+  const tickersRef          = useRef(tickers);
+  const prevKey             = useRef("");
 
-  useEffect(() => {
-    const interval = setInterval(() => {
-      setPrices((prev) => {
-        const next = { ...prev };
-        Object.keys(next).forEach((ticker) => {
-          const delta = (Math.random() - 0.499) * next[ticker].price * 0.0008;
-          const newPrice = parseFloat((next[ticker].price + delta).toFixed(2));
-          const base = STOCK_UNIVERSE[ticker].price;
-          const change = parseFloat((newPrice - base).toFixed(2));
-          const changePct = parseFloat(((change / base) * 100).toFixed(2));
-          next[ticker] = { price: newPrice, change, changePct };
-        });
-        return next;
+  useEffect(() => { tickersRef.current = tickers; }, [tickers]);
+
+  const applyUpdates = useCallback((updates) => {
+    if (!updates.length) return;
+    setPrices((prev) => {
+      const next = { ...prev };
+      updates.forEach(({ ticker, price, change, changePct }) => {
+        next[ticker] = { price, change, changePct };
       });
-    }, 1800);
-
-    return () => clearInterval(interval);
+      return next;
+    });
   }, []);
+
+  // Fetch immediately when new tickers are added
+  useEffect(() => {
+    const key = [...tickers].sort().join(",");
+    if (!tickers.length || key === prevKey.current) return;
+    prevKey.current = key;
+    const missing = tickers.filter((t) => !prices[t]);
+    if (missing.length) fetchBatchQuotes(missing).then(applyUpdates).catch(() => {});
+  // eslint-disable-next-line react-hooks/exhaustive-deps
+  }, [tickers.join(",")]);
+
+  // Poll all tickers every 15s
+  useEffect(() => {
+    const id = setInterval(() => {
+      if (tickersRef.current.length)
+        fetchBatchQuotes(tickersRef.current).then(applyUpdates).catch(() => {});
+    }, 15_000);
+    return () => clearInterval(id);
+  }, [applyUpdates]);
 
   return prices;
 }
