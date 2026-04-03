@@ -9,21 +9,21 @@ export default function Fundamentals({ selected, livePrice, isInWatchlist, onAdd
     : null);
   const isUp = displayPrice ? displayPrice.changePct >= 0 : true;
 
-  const rows = (quote && profile && metrics) ? [
-    ["Market Cap",  profile.marketCap],
-    ["P/E Ratio",   metrics.peRatio],
-    ["EPS (TTM)",   metrics.eps],
-    ["52W High",    metrics.high52],
-    ["52W Low",     metrics.low52],
-    ["Div Yield",   metrics.divYield],
-    ["Beta",        metrics.beta],
-    ["Open",        quote.open      ? `$${quote.open.toFixed(2)}`      : "—"],
-    ["Prev Close",  quote.prevClose ? `$${quote.prevClose.toFixed(2)}` : "—"],
-    ["Day High",    quote.high      ? `$${quote.high.toFixed(2)}`      : "—"],
-    ["Day Low",     quote.low       ? `$${quote.low.toFixed(2)}`       : "—"],
-    ["Exchange",    profile.exchange],
-    ["Industry",    profile.industry],
-  ].filter(([, v]) => v && v !== "—" && v !== "$0.00") : [];
+  const rows = [
+    ["Market Cap",  profile?.marketCap],
+    ["P/E Ratio",   metrics?.peRatio],
+    ["EPS (TTM)",   metrics?.eps],
+    ["52W High",    metrics?.high52],
+    ["52W Low",     metrics?.low52],
+    ["Div Yield",   metrics?.divYield],
+    ["Beta",        metrics?.beta],
+    ["Open",        quote?.open      ? `$${quote.open.toFixed(2)}`      : "—"],
+    ["Prev Close",  quote?.prevClose ? `$${quote.prevClose.toFixed(2)}` : "—"],
+    ["Day High",    quote?.high      ? `$${quote.high.toFixed(2)}`      : "—"],
+    ["Day Low",     quote?.low       ? `$${quote.low.toFixed(2)}`       : "—"],
+    ["Exchange",    profile?.exchange],
+    ["Industry",    profile?.industry],
+  ].filter(([, v]) => v && v !== "—" && v !== "$0.00" && v !== "undefined");
 
   return (
     <aside style={{

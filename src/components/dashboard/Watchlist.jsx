@@ -98,6 +98,23 @@ function Shimmer({ width = 60, height = 10 }) {
 }
 
 export default function Watchlist({ selected, prices, watchlist, onSelect, onRemove }) {
+  const [marketOpen, setMarketOpen] = React.useState(true);
+
+  React.useEffect(() => {
+    const checkMarket = () => {
+      const nyTime = new Date().toLocaleString("en-US", { timeZone: "America/New_York" });
+      const d = new Date(nyTime);
+      const isWeekend = d.getDay() === 0 || d.getDay() === 6;
+      const hours = d.getHours();
+      const minutes = d.getMinutes();
+      const time = hours * 100 + minutes;
+      setMarketOpen(!isWeekend && time >= 930 && time < 1600);
+    };
+    checkMarket();
+    const interval = setInterval(checkMarket, 60000);
+    return () => clearInterval(interval);
+  }, []);
+
   return (
     <aside style={{
       padding: "20px 14px",
@@ -158,9 +175,12 @@ export default function Watchlist({ selected, prices, watchlist, onSelect, onRem
         <div style={{ display: "flex", alignItems: "center", gap: 7, marginBottom: 3 }}>
           <div style={{
             width: 6, height: 6, borderRadius: "50%", flexShrink: 0,
-            background: "#30d158", boxShadow: "0 0 5px #30d158",
+            background: marketOpen ? "#30d158" : "#ff453a",
+            boxShadow: `0 0 5px ${marketOpen ? "#30d158" : "#ff453a"}`,
           }} />
-          <span style={{ fontSize: 11, color: "#8e8e93", fontWeight: 500 }}>Market Open</span>
+          <span style={{ fontSize: 11, color: "#8e8e93", fontWeight: 500 }}>
+            {marketOpen ? "Market Open" : "Market Closed"}
+          </span>
         </div>
         <div style={{ fontSize: 10, color: "#48484a" }}>NYSE · NASDAQ · Live</div>
       </div>

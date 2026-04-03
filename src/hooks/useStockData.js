@@ -24,15 +24,16 @@ export function useStockData(ticker) {
     setMetrics(null);
 
     Promise.all([
-      fetchQuote(ticker),
-      fetchProfile(ticker),
-      fetchMetrics(ticker),
+      fetchQuote(ticker).catch((err) => { console.error("fetchQuote Error:", err); return null; }),
+      fetchProfile(ticker).catch((err) => { console.error("fetchProfile Error:", err); return null; }),
+      fetchMetrics(ticker).catch((err) => { console.error("fetchMetrics Error:", err); return null; }),
     ])
       .then(([q, p, m]) => {
         if (cancelled) return;
         setQuote(q);
         setProfile(p);
         setMetrics(m);
+        if (!q && !p && !m) setError("Could not load any data for " + ticker);
       })
       .catch((err) => {
         if (cancelled) return;

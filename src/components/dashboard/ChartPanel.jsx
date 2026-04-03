@@ -239,10 +239,9 @@ export default function ChartPanel({
           >
             <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
               stroke="#8e8e93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              {/* iOS share: box with arrow pointing up */}
-              <line x1="12" y1="16" x2="12" y2="4" />
-              <polyline points="8 8 12 4 16 8" />
-              <path d="M8 16H5a1 1 0 0 0-1 1v2a1 1 0 0 0 1 1h14a1 1 0 0 0 1-1v-2a1 1 0 0 0-1-1h-3" />
+              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+              <polyline points="16 6 12 2 8 6"/>
+              <line x1="12" y1="2" x2="12" y2="15"/>
             </svg>
           </button>
           <ShareToast visible={showToast} />
