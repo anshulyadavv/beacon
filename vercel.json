@@ -1,0 +1,16 @@
+{
+  "rewrites": [
+    {
+      "source": "/api/yquote/:path*",
+      "destination": "https://query1.finance.yahoo.com/:path*"
+    },
+    {
+      "source": "/api/ysearch/:path*",
+      "destination": "https://query2.finance.yahoo.com/:path*"
+    },
+    {
+      "source": "/(.*)",
+      "destination": "/index.html"
+    }
+  ]
+}
