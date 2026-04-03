@@ -29,12 +29,12 @@ export function useLivePrices(tickers = []) {
   // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [tickers.join(",")]);
 
-  // Poll all tickers every 15s
+  // Poll all tickers every 1s
   useEffect(() => {
     const id = setInterval(() => {
       if (tickersRef.current.length)
         fetchBatchQuotes(tickersRef.current).then(applyUpdates).catch(() => {});
-    }, 15_000);
+    }, 1_000);
     return () => clearInterval(id);
   }, [applyUpdates]);
 

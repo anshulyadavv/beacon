@@ -33,26 +33,43 @@ async function apiFetch(path, ttlMs = 60_000) {
   return setCache(path, data);
 }
 
-// ─── Quote ────────────────────────────────────────────────────────────────────
+// ─── Quote (Migrated to Yahoo Finance) ────────────────────────────────────────
 // Returns { price, change, changePct, open, prevClose, high, low }
 export async function fetchQuote(ticker) {
-  const data = await apiFetch(`/quote?symbol=${ticker}`, 15_000);
-  if (!data || data.c == null) throw new Error(`No quote for ${ticker}`);
-  const price     = data.c;
-  const prevClose = data.pc;
-  const change    = parseFloat((price - prevClose).toFixed(2));
-  const changePct = prevClose
-    ? parseFloat(((change / prevClose) * 100).toFixed(2))
-    : 0;
-  return {
+  const url = `/api/yquote/v8/finance/chart/${ticker}?interval=1d&range=1d`;
+  
+  const cacheKey = `quote:${ticker}`;
+  const cached = getCached(cacheKey, 1_000);
+  if (cached) return cached;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Quote fetch failed for ${ticker}`);
+  const data = await res.json();
+
+  const result = data?.chart?.result?.[0];
+  if (!result) throw new Error(`No quote for ${ticker}`);
+
+  const meta = result.meta;
+  const quote = result.indicators?.quote?.[0] || {};
+
+  const price = meta.regularMarketPrice;
+  const prevClose = meta.chartPreviousClose;
+  const change = parseFloat((price - prevClose).toFixed(2));
+  const changePct = prevClose ? parseFloat(((change / prevClose) * 100).toFixed(2)) : 0;
+
+  const openPrice = quote.open?.[0] ?? meta.regularMarketPrice;
+
+  const formatted = {
     price,
     change,
     changePct,
-    open:      data.o  ?? 0,
-    prevClose: data.pc ?? 0,
-    high:      data.h  ?? 0,
-    low:       data.l  ?? 0,
+    open: openPrice,
+    prevClose: prevClose,
+    high: meta.regularMarketDayHigh ?? price,
+    low: meta.regularMarketDayLow ?? price,
   };
+
+  return setCache(cacheKey, formatted);
 }
 
 // ─── Company profile ──────────────────────────────────────────────────────────
@@ -114,7 +131,7 @@ const CHART_CONFIG = {
 
 export async function fetchCandles(ticker, timeframe) {
   const cfg = CHART_CONFIG[timeframe] ?? CHART_CONFIG["1Y"];
-  const url = `https://query1.finance.yahoo.com/v8/finance/chart/${ticker}?interval=${cfg.interval}&range=${cfg.range}&corsDomain=finance.yahoo.com`;
+  const url = `/api/yquote/v8/finance/chart/${ticker}?interval=${cfg.interval}&range=${cfg.range}`;
 
   const cacheKey = `chart:${ticker}:${timeframe}`;
   const cached = getCached(cacheKey, 60_000);
@@ -131,24 +148,35 @@ export async function fetchCandles(ticker, timeframe) {
   return setCache(cacheKey, filtered);
 }
 
-// ─── Search ───────────────────────────────────────────────────────────────────
+// ─── Search (Migrated to Yahoo Finance) ───────────────────────────────────────
 export async function searchStocks(query) {
-  const data = await apiFetch(`/search?q=${encodeURIComponent(query)}`, 120_000);
+  const url = `/api/ysearch/v1/finance/search?q=${encodeURIComponent(query)}&quotesCount=8&newsCount=0&enableFuzzyQuery=false`;
+  
+  const cacheKey = `search:${query}`;
+  const cached = getCached(cacheKey, 120_000);
+  if (cached) return cached;
+
+  const res = await fetch(url);
+  if (!res.ok) throw new Error(`Search failed`);
+  const data = await res.json();
+
   const seen = new Set();
-  return (data?.result ?? [])
+  const results = (data?.quotes ?? [])
     .filter((r) => {
-      if (r.type !== "Common Stock" || !r.displaySymbol) return false;
-      if (seen.has(r.displaySymbol)) return false;
-      seen.add(r.displaySymbol);
+      if (!["EQUITY", "ETF"].includes(r.quoteType) || !r.symbol) return false;
+      if (seen.has(r.symbol)) return false;
+      seen.add(r.symbol);
       return true;
     })
     .slice(0, 9)
     .map((r) => ({
-      ticker:   r.displaySymbol,
-      name:     r.description,
-      exchange: r.primaryExchange ?? "",
-      type:     r.type,
+      ticker:   r.symbol,
+      name:     r.shortname || r.longname || r.symbol,
+      exchange: r.exchDisp ?? "",
+      type:     r.quoteType === "ETF" ? "ETF" : "Common Stock",
     }));
+
+  return setCache(cacheKey, results);
 }
 
 // ─── Batch quotes (parallel) ──────────────────────────────────────────────────

@@ -1,9 +1,21 @@
+import { defineConfig } from 'vite'
+import react from '@vitejs/plugin-react'
+
+// https://vitejs.dev/config/
 export default defineConfig({
   plugins: [react()],
-  base: "beacon",
+  server: {
+    proxy: {
+      '/api/yquote': {
+        target: 'https://query1.finance.yahoo.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/yquote/, '')
+      },
+      '/api/ysearch': {
+        target: 'https://query2.finance.yahoo.com',
+        changeOrigin: true,
+        rewrite: (path) => path.replace(/^\/api\/ysearch/, '')
+      }
+    }
+  }
 })
-```
-
-After pushing, GitHub Actions will build and deploy automatically. Your site will be live at:
-```
-https://anshulyadavv.github.io/beacon/
