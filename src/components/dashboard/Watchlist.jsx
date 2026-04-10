@@ -93,7 +93,7 @@ function WatchlistRow({
 }
 
 export default function Watchlist({ 
-  user, logout, selected, prices, watchlist, onSelect, onRemove 
+  user, logout, selected, prices, watchlist, onSelect, onRemove, onOpenSettings
 }) {
   const [marketOpen, setMarketOpen] = useState(true);
   const [isEditing, setIsEditing] = useState(false);
@@ -225,7 +225,16 @@ export default function Watchlist({
             justifyContent: "space-between",
             gap: "0.5rem"
           }}>
-            <div style={{ display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0 }}>
+            <div 
+              onClick={onOpenSettings}
+              style={{ 
+                display: "flex", alignItems: "center", gap: "0.75rem", minWidth: 0,
+                cursor: "pointer", padding: "4px 8px 4px 0", borderRadius: "8px",
+                transition: "background 0.2s"
+              }}
+              onMouseOver={(e) => e.currentTarget.style.background = "rgba(255,255,255,0.05)"}
+              onMouseOut={(e) => e.currentTarget.style.background = "transparent"}
+            >
               <div style={{ 
                 width: "32px", height: "32px", borderRadius: "50%", 
                 background: "var(--accent-blue)", display: "flex", 
@@ -235,10 +244,10 @@ export default function Watchlist({
               </div>
               <div style={{ minWidth: 0 }}>
                 <p style={{ fontSize: "0.85rem", fontWeight: 600, margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {user?.name || "User"}
+                  {user?.user_metadata?.full_name || user?.name || "User"}
                 </p>
                 <p style={{ fontSize: "0.7rem", color: "var(--text-secondary)", margin: 0, whiteSpace: "nowrap", overflow: "hidden", textOverflow: "ellipsis" }}>
-                  {user?.email}
+                  {user?.email || "Signed In"}
                 </p>
               </div>
             </div>

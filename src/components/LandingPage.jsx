@@ -93,7 +93,7 @@ export default function LandingPage() {
               lineHeight: "1.02",
               marginBottom: "1.5rem"
             }}>
-              Smart Analytics for <br /> Modern Traders
+              Track the market <br /> with exact clarity
             </h1>
             <p style={{ 
               color: "var(--text-secondary)", 
@@ -102,10 +102,10 @@ export default function LandingPage() {
               margin: "0 auto 2.5rem",
               lineHeight: "1.6"
             }}>
-              Track your favorite stocks with real-time data, beautiful charts, and deep insights. All in one simple, powerful dashboard.
+              Follow your favorite stocks with live data and interactive charts. It is everything you need in one simple dashboard.
             </p>
 
-            <div style={{ 
+            <div style={{  
               display: "flex", 
               gap: "1rem", 
               justifyContent: "center",
@@ -171,7 +171,6 @@ export default function LandingPage() {
                 maxWidth: "840px",
                 margin: "0 auto",
                 borderRadius: "32px",
-                height: isMobile ? "280px" : "440px",
                 overflow: "hidden",
                 boxShadow: "0 30px 60px rgba(0, 0, 0, 0.6)",
                 display: "flex",
@@ -185,8 +184,8 @@ export default function LandingPage() {
                  alt="Beacon Dashboard"
                  style={{
                    width: "100%",
-                   height: "100%",
-                   objectFit: "cover",
+                   height: "auto",
+                   display: "block",
                    opacity: 0.9,
                    transition: "opacity 0.5s ease"
                  }}
@@ -201,10 +200,10 @@ export default function LandingPage() {
       <section style={{ padding: isMobile ? "60px 1.5rem" : "100px 2rem", maxWidth: "1200px", margin: "0 auto" }}>
         <div style={{ textAlign: "center", marginBottom: isMobile ? "2.5rem" : "4rem" }}>
           <h2 style={{ fontSize: isSmall ? "1.8rem" : "clamp(2rem, 4vw, 3rem)", fontWeight: 700, marginBottom: "1rem" }}>
-            Advanced Tools for Smarter Trading
+            Tools you actually need
           </h2>
           <p style={{ color: "var(--text-secondary)", fontSize: isSmall ? "0.95rem" : "1.1rem" }}>
-            Everything you need to navigate the markets with confidence.
+            Everything required to navigate the markets with confidence.
           </p>
         </div>
         <div style={{ 
@@ -215,17 +214,17 @@ export default function LandingPage() {
           <FeatureCard 
             icon={Zap} 
             title="Live Market Data" 
-            description="Real-time market feeds from major indices, optimized for fast and accurate decision-making." 
+            description="Live market feeds designed to help you make decisions fast." 
           />
           <FeatureCard 
             icon={BarChart3} 
-            title="Advanced Charting" 
-            description="Professional charting tools with high-quality indicators and complete historical data." 
+            title="Interactive Charting" 
+            description="TradingView charts with complete history and technical indicators." 
           />
           <FeatureCard 
             icon={Shield} 
-            title="Deep Insights" 
-            description="In-depth fundamentals and risk-assessment tools designed for every type of trader." 
+            title="Company Insights" 
+            description="Clear company fundamentals so you know exactly what you are investing into." 
           />
         </div>
       </section>
@@ -259,10 +258,10 @@ export default function LandingPage() {
                 <span style={{ fontWeight: 800, fontSize: "1.4rem", letterSpacing: "-0.6px" }}>BEACON</span>
              </div>
               <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", maxWidth: "320px", margin: isSmall ? "0 auto" : "0", marginBottom: "1.5rem" }}>
-                A powerful dashboard for modern stock analysis and professional market insights.
+                A trading dashboard built for modern stock analysis.
               </p>
               <a 
-                href="https://github.com/anshulyadavv/beacon" 
+                href="#" 
                 target="_blank" 
                 rel="noopener noreferrer"
                 style={{
@@ -318,7 +317,7 @@ export default function LandingPage() {
           textAlign: "center" 
         }}>
           <p style={{ color: "var(--text-secondary)", fontSize: "0.85rem" }}>
-            © 2026 Beacon Financial. All rights reserved. Data provided by Finnhub and Yahoo Finance.
+            © 2026 Beacon. All rights reserved. Data provided by Finnhub and Yahoo Finance.
           </p>
         </div>
       </footer>

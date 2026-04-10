@@ -5,6 +5,7 @@ import { useLivePrices } from "../../hooks/useLivePrices";
 import Watchlist from "./Watchlist";
 import ChartPanel from "./ChartPanel";
 import Fundamentals from "./Fundamentals";
+import SettingsModal from "./SettingsModal";
 
 import Cookies from "js-cookie";
 import { useAuth } from "../../hooks/useAuth.jsx";
@@ -23,6 +24,7 @@ export default function TradingDashboard() {
   const [timeframe, setTimeframe] = useState("1D");
   const [isSidebarOpen, setIsSidebarOpen] = useState(false);
   const [showFundamentals, setShowFundamentals] = useState(false);
+  const [isSettingsOpen, setIsSettingsOpen] = useState(false);
   
   // Load initial watchlist from cookie or default
   const [watchlist, setWatchlist] = useState(() => {
@@ -54,6 +56,7 @@ export default function TradingDashboard() {
   const isInWatchlist       = (ticker) => watchlist.includes(ticker);
 
   return (
+    <>
     <div className="dashboard-grid">
       {/* Mobile Top Bar */}
       {isMobile && (
@@ -157,6 +160,7 @@ export default function TradingDashboard() {
                 if (isMobile) setIsSidebarOpen(false);
               }}
               onRemove={removeFromWatchlist}
+              onOpenSettings={() => setIsSettingsOpen(true)}
             />
           </motion.div>
         )}
@@ -215,5 +219,9 @@ export default function TradingDashboard() {
         />
       )}
     </div>
+
+    {/* Settings Modal Layer */}
+    <SettingsModal isOpen={isSettingsOpen} onClose={() => setIsSettingsOpen(false)} />
+    </>
   );
 }

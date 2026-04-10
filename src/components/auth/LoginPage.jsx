@@ -47,15 +47,44 @@ export default function LoginPage() {
       position: "relative",
       overflow: "hidden"
     }}>
-      {/* Background Glow */}
-      <div style={{
-        position: "absolute",
-        width: "600px",
-        height: "600px",
-        background: "radial-gradient(circle, rgba(0, 113, 227, 0.1) 0%, transparent 70%)",
-        filter: "blur(100px)",
-        zIndex: 0
-      }} />
+      {/* Dynamic Background Glows */}
+      <motion.div 
+        animate={{
+          scale: [1, 1.5, 1],
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: "10%",
+          left: "10%",
+          width: "600px",
+          height: "600px",
+          background: "radial-gradient(circle, rgba(0, 113, 227, 0.15) 0%, transparent 70%)",
+          filter: "blur(100px)",
+          zIndex: 0
+        }} 
+      />
+      
+      <motion.div 
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, -100, 0],
+          y: [0, 50, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        style={{
+          position: "absolute",
+          bottom: "10%",
+          right: "10%",
+          width: "500px",
+          height: "500px",
+          background: "radial-gradient(circle, rgba(94, 92, 230, 0.15) 0%, transparent 70%)",
+          filter: "blur(100px)",
+          zIndex: 0
+        }} 
+      />
 
       {/* Close Button */}
       <button 

@@ -54,15 +54,44 @@ export default function SignUpPage() {
       position: "relative",
       overflow: "hidden"
     }}>
-      {/* Background Glow */}
-      <div style={{
-        position: "absolute",
-        width: "600px",
-        height: "600px",
-        background: "radial-gradient(circle, rgba(94, 92, 230, 0.1) 0%, transparent 70%)",
-        filter: "blur(100px)",
-        zIndex: 0
-      }} />
+      {/* Dynamic Background Glows */}
+      <motion.div 
+        animate={{
+          scale: [1, 1.5, 1],
+          x: [0, 100, 0],
+          y: [0, -50, 0],
+        }}
+        transition={{ duration: 15, repeat: Infinity, ease: "easeInOut" }}
+        style={{
+          position: "absolute",
+          top: "10%",
+          left: "10%",
+          width: "600px",
+          height: "600px",
+          background: "radial-gradient(circle, rgba(94, 92, 230, 0.15) 0%, transparent 70%)",
+          filter: "blur(100px)",
+          zIndex: 0
+        }} 
+      />
+      
+      <motion.div 
+        animate={{
+          scale: [1, 1.2, 1],
+          x: [0, -100, 0],
+          y: [0, 50, 0],
+        }}
+        transition={{ duration: 20, repeat: Infinity, ease: "easeInOut", delay: 2 }}
+        style={{
+          position: "absolute",
+          bottom: "10%",
+          right: "10%",
+          width: "500px",
+          height: "500px",
+          background: "radial-gradient(circle, rgba(0, 113, 227, 0.15) 0%, transparent 70%)",
+          filter: "blur(100px)",
+          zIndex: 0
+        }} 
+      />
 
       {/* Close Button */}
       <button 
@@ -107,8 +136,8 @@ export default function SignUpPage() {
         style={{
           width: "100%",
           maxWidth: "420px",
-          padding: "3rem 2.5rem",
-          borderRadius: "32px",
+          padding: "2rem 2rem",
+          borderRadius: "28px",
           textAlign: "center",
           position: "relative",
           zIndex: 1,
@@ -118,13 +147,13 @@ export default function SignUpPage() {
           boxShadow: "0 30px 60px rgba(0, 0, 0, 0.4)"
         }}
       >
-        <Link to="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.5rem", marginBottom: "2rem" }}>
-          <Activity size={32} color="var(--accent-blue)" />
-          <span style={{ color: "white", fontWeight: 800, fontSize: "1.5rem", letterSpacing: "-0.5px" }}>BEACON</span>
+        <Link to="/" style={{ textDecoration: "none", display: "inline-flex", alignItems: "center", gap: "0.5rem", marginBottom: "1rem" }}>
+          <Activity size={28} color="var(--accent-blue)" />
+          <span style={{ color: "white", fontWeight: 800, fontSize: "1.25rem", letterSpacing: "-0.5px" }}>BEACON</span>
         </Link>
 
-        <h1 style={{ fontSize: "1.75rem", fontWeight: 700, marginBottom: "0.5rem", color: "white" }}>Create Your Account</h1>
-        <p style={{ color: "var(--text-secondary)", fontSize: "0.95rem", marginBottom: "2.5rem" }}>
+        <h1 style={{ fontSize: "1.5rem", fontWeight: 700, marginBottom: "0.25rem", color: "white" }}>Create Your Account</h1>
+        <p style={{ color: "var(--text-secondary)", fontSize: "0.9rem", marginBottom: "1.5rem" }}>
           Join Beacon to start tracking your portfolio with professional tools.
         </p>
 
@@ -135,7 +164,7 @@ export default function SignUpPage() {
           </div>
         )}
 
-        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "1rem" }}>
+        <form onSubmit={handleSubmit} style={{ display: "flex", flexDirection: "column", gap: "0.85rem" }}>
           {error && (
             <div style={{ color: "var(--error)", fontSize: "0.85rem", textAlign: "center" }}>
               {error}
@@ -155,10 +184,10 @@ export default function SignUpPage() {
                 width: "100%",
                 background: "rgba(0,0,0,0.3)",
                 border: "1px solid rgba(255,255,255,0.1)",
-                padding: "0.85rem 1rem 0.85rem 3rem",
-                borderRadius: "14px",
+                padding: "0.75rem 1rem 0.75rem 2.75rem",
+                borderRadius: "12px",
                 color: "white",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 outline: "none",
                 transition: "all 0.2s",
                 boxSizing: "border-box",
@@ -182,10 +211,10 @@ export default function SignUpPage() {
                 width: "100%",
                 background: "rgba(0,0,0,0.3)",
                 border: "1px solid rgba(255,255,255,0.1)",
-                padding: "0.85rem 1rem 0.85rem 3rem",
-                borderRadius: "14px",
+                padding: "0.75rem 1rem 0.75rem 2.75rem",
+                borderRadius: "12px",
                 color: "white",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 outline: "none",
                 transition: "all 0.2s",
                 boxSizing: "border-box",
@@ -209,10 +238,10 @@ export default function SignUpPage() {
                 width: "100%",
                 background: "rgba(0,0,0,0.3)",
                 border: "1px solid rgba(255,255,255,0.1)",
-                padding: "0.85rem 1rem 0.85rem 3rem",
-                borderRadius: "14px",
+                padding: "0.75rem 1rem 0.75rem 2.75rem",
+                borderRadius: "12px",
                 color: "white",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 outline: "none",
                 transition: "all 0.2s",
                 boxSizing: "border-box",
@@ -236,10 +265,10 @@ export default function SignUpPage() {
                 width: "100%",
                 background: "rgba(0,0,0,0.3)",
                 border: "1px solid rgba(255,255,255,0.1)",
-                padding: "0.85rem 1rem 0.85rem 3rem",
-                borderRadius: "14px",
+                padding: "0.75rem 1rem 0.75rem 2.75rem",
+                borderRadius: "12px",
                 color: "white",
-                fontSize: "1rem",
+                fontSize: "0.95rem",
                 outline: "none",
                 transition: "all 0.2s",
                 boxSizing: "border-box",
@@ -257,13 +286,13 @@ export default function SignUpPage() {
             style={{
               background: "white",
               color: "black",
-              padding: "0.85rem",
-              borderRadius: "14px",
-              fontSize: "1rem",
+              padding: "0.75rem",
+              borderRadius: "12px",
+              fontSize: "0.95rem",
               fontWeight: 600,
               border: "none",
               cursor: (!hasValidSupabase || loading) ? "not-allowed" : "pointer",
-              marginTop: "0.5rem",
+              marginTop: "0.25rem",
               display: "flex",
               alignItems: "center",
               justifyContent: "center",
@@ -275,7 +304,7 @@ export default function SignUpPage() {
           </motion.button>
         </form>
 
-        <p style={{ marginTop: "2.5rem", fontSize: "0.9rem", color: "var(--text-secondary)" }}>
+        <p style={{ marginTop: "1.5rem", fontSize: "0.85rem", color: "var(--text-secondary)" }}>
           Already have an account? <Link to="/login" style={{ color: "var(--accent-blue)", textDecoration: "none", fontWeight: 600 }}>Sign In</Link>
         </p>
       </motion.div>

@@ -319,25 +319,6 @@ export default function ChartPanel({
               </button>
             ))}
           </div>
-
-          <button
-            onClick={() => isInWatchlist ? onRemoveFromWatchlist(selected) : onAddToWatchlist(selected)}
-            style={{
-              display: "flex", alignItems: "center", gap: 5,
-              background: "transparent", border: "none", borderRadius: 7, padding: "4px 10px",
-              fontSize: 11, fontWeight: 500, cursor: "pointer",
-              color: isInWatchlist ? "#ff453a" : "#48484a",
-              transition: "color 0.15s", fontFamily: "inherit",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.color = isInWatchlist ? "#ff6961" : "#8e8e93"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.color = isInWatchlist ? "#ff453a" : "#48484a"; }}
-          >
-            {isInWatchlist ? (
-              <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="18" y1="6" x2="6" y2="18" /><line x1="6" y1="6" x2="18" y2="18" /></svg>Remove</>
-            ) : (
-              <><svg width="9" height="9" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.5" strokeLinecap="round"><line x1="12" y1="5" x2="12" y2="19" /><line x1="5" y1="12" x2="19" y2="12" /></svg>+ Watchlist</>
-            )}
-          </button>
         </div>
 
         {/* Chart */}
