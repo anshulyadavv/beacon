@@ -9,8 +9,6 @@ const FALLBACK_PRICES = {
 const DEFAULT_STOCK = { price: 150, changePct: 1.0 };
 function getStock(ticker) { return FALLBACK_PRICES[ticker] ?? DEFAULT_STOCK; }
 
-
-
 /**
  * Seeded pseudo-random number generator — deterministic per ticker+timeframe.
  * Returns a closure that yields values in [0, 1).
@@ -41,17 +39,8 @@ const TIMEFRAME_CONFIG = {
 
 /**
  * Generates a realistic-feeling price series for a given ticker + timeframe.
- *
- * What makes each timeframe feel distinct:
- *   1D  → tight intraday wiggles, barely moves
- *   1W  → small multi-day swings visible
- *   1M  → clear monthly trend with pullbacks
- *   3M  → medium-term momentum with corrections
- *   1Y  → full-year arc with multiple swings
- *   ALL → multi-year journey, large moves
- *
- * The series always ends exactly at the stock's current live price.
- * Replace with a real OHLCV API fetch when ready.
+ * Always ends exactly at the stock's current live price.
+ * Returns array of { close, volume } objects.
  */
 export function generateChartData(ticker, timeframe) {
   const stock = getStock(ticker);
@@ -87,11 +76,18 @@ export function generateChartData(ticker, timeframe) {
 
     price += shock + trendPull + momentum;
     price = Math.max(price, stock.price * 0.25); // hard floor
-    data.push(price);
+    
+    // Mock volume
+    const vol = (500000 + rand() * 2000000) * (1 + progress);
+    
+    data.push({ close: price, volume: vol });
   }
 
   // Pin last point exactly to current price
-  data.push(stock.price);
+  data.push({ 
+    close: stock.price, 
+    volume: 800000 + rand() * 1000000 
+  });
 
   return data;
 }

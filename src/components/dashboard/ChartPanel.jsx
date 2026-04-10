@@ -4,6 +4,7 @@ import { TIMEFRAMES } from "../../data/stocks";
 import { useStockSearch } from "../../hooks/useStockSearch";
 import { useStockData } from "../../hooks/useStockData";
 import Chart from "./Chart";
+import { useWindowSize } from "../../hooks/useWindowSize";
 
 function ShareToast({ visible }) {
   return (
@@ -31,7 +32,11 @@ export default function ChartPanel({
   watchlist, isInWatchlist,
   onSelect, onTimeframe,
   onAddToWatchlist, onRemoveFromWatchlist,
+  isMobile: isMobileProp
 }) {
+  const { width } = useWindowSize();
+  const isMobile = isMobileProp ?? (width <= 1024);
+
   const [query,     setQuery]     = useState("");
   const [focused,   setFocused]   = useState(false);
   const [showToast, setShowToast] = useState(false);
@@ -82,10 +87,10 @@ export default function ChartPanel({
 
   return (
     <main style={{
-      padding: "18px 22px",
-      display: "flex", flexDirection: "column", gap: 12,
+      padding: isMobile ? "12px 14px" : "18px 22px",
+      display: "flex", flexDirection: "column", gap: isMobile ? 8 : 12,
       height: "100%", overflow: "hidden",
-      borderRight: "1px solid #1c1c1e",
+      borderRight: isMobile ? "none" : "1px solid #1c1c1e",
       boxSizing: "border-box",
       background: "#0b0b0c",
     }}>
@@ -112,7 +117,7 @@ export default function ChartPanel({
               value={query}
               onChange={(e) => setQuery(e.target.value)}
               onFocus={() => setFocused(true)}
-              placeholder="Search any stock, ETF, company…"
+              placeholder={isMobile ? "Search..." : "Search any stock, ETF, company…"}
               style={{
                 background: "transparent", border: "none",
                 color: "#fff", fontFamily: "inherit",
@@ -124,7 +129,7 @@ export default function ChartPanel({
                 background: "none", border: "none", cursor: "pointer",
                 color: "#48484a", fontSize: 18, padding: 0, lineHeight: 1, flexShrink: 0,
               }}>×</button>
-            ) : (
+            ) : !isMobile && (
               <kbd style={{
                 color: "#48484a", fontSize: 10,
                 background: "rgba(255,255,255,0.05)", padding: "2px 6px",
@@ -177,9 +182,9 @@ export default function ChartPanel({
                     <div style={{ flex: 1 }} onClick={() => handleSelect(r.ticker)}>
                       <div style={{ display: "flex", alignItems: "baseline", gap: 8 }}>
                         <span style={{ fontWeight: 600, fontSize: 13, color: "#fff" }}>{r.ticker}</span>
-                        <span style={{ fontSize: 10, color: "#48484a" }}>{r.exchange}</span>
+                        {!isMobile && <span style={{ fontSize: 10, color: "#48484a" }}>{r.exchange}</span>}
                       </div>
-                      <div style={{ fontSize: 11, color: "#8e8e93", marginTop: 1 }}>{r.name}</div>
+                      <div style={{ fontSize: 11, color: "#8e8e93", marginTop: 1, maxWidth: isMobile ? "120px" : "auto", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap" }}>{r.name}</div>
                     </div>
 
                     {/* Live price (if already streaming) */}
@@ -199,7 +204,7 @@ export default function ChartPanel({
                     <button
                       onClick={(e) => { e.stopPropagation(); inWatch ? onRemoveFromWatchlist(r.ticker) : onAddToWatchlist(r.ticker); }}
                       style={{
-                        background: inWatch ? "rgba(255,69,58,0.10)" : "rgba(255,255,255,0.05)",
+                         background: inWatch ? "rgba(255,69,58,0.10)" : "rgba(255,255,255,0.05)",
                         border: `1px solid ${inWatch ? "rgba(255,69,58,0.25)" : "rgba(255,255,255,0.08)"}`,
                         borderRadius: 7, padding: "4px 10px",
                         fontSize: 11, fontWeight: 500, cursor: "pointer",
@@ -222,36 +227,45 @@ export default function ChartPanel({
           )}
         </div>
 
-        {/* Share */}
-        <div style={{ position: "relative", flexShrink: 0 }}>
-          <button
-            onClick={handleShare}
-            title={`Share ${selected}`}
-            style={{
-              background: "rgba(255,255,255,0.03)",
-              border: "1px solid #1c1c1e", borderRadius: 12,
-              width: 38, height: 38,
-              display: "flex", alignItems: "center", justifyContent: "center",
-              cursor: "pointer", transition: "all 0.18s",
-            }}
-            onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "#2c2c2e"; }}
-            onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "#1c1c1e"; }}
-          >
-            <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
-              stroke="#8e8e93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
-              <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
-              <polyline points="16 6 12 2 8 6"/>
-              <line x1="12" y1="2" x2="12" y2="15"/>
-            </svg>
-          </button>
-          <ShareToast visible={showToast} />
-        </div>
+        {/* Share (Desktop only for now) */}
+        {!isMobile && (
+          <div style={{ position: "relative", flexShrink: 0 }}>
+            <button
+              onClick={handleShare}
+              title={`Share ${selected}`}
+              style={{
+                background: "rgba(255,255,255,0.03)",
+                border: "1px solid #1c1c1e", borderRadius: 12,
+                width: 38, height: 38,
+                display: "flex", alignItems: "center", justifyContent: "center",
+                cursor: "pointer", transition: "all 0.18s",
+              }}
+              onMouseEnter={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.07)"; e.currentTarget.style.borderColor = "#2c2c2e"; }}
+              onMouseLeave={(e) => { e.currentTarget.style.background = "rgba(255,255,255,0.03)"; e.currentTarget.style.borderColor = "#1c1c1e"; }}
+            >
+              <svg width="16" height="16" viewBox="0 0 24 24" fill="none"
+                stroke="#8e8e93" strokeWidth="2" strokeLinecap="round" strokeLinejoin="round">
+                <path d="M4 12v8a2 2 0 0 0 2 2h12a2 2 0 0 0 2-2v-8"/>
+                <polyline points="16 6 12 2 8 6"/>
+                <line x1="12" y1="2" x2="12" y2="15"/>
+              </svg>
+            </button>
+            <ShareToast visible={showToast} />
+          </div>
+        )}
       </div>
 
       {/* ── Stock header ── */}
-      <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center", flexShrink: 0 }}>
-        <div style={{ display: "flex", alignItems: "center", gap: 8 }}>
-          <h1 style={{ fontSize: 19, fontWeight: 700, letterSpacing: "-0.03em", margin: 0, color: "#fff" }}>
+      <div style={{ 
+        display: "flex", 
+        flexDirection: isMobile ? "column" : "row",
+        justifyContent: "space-between", 
+        alignItems: isMobile ? "flex-start" : "center", 
+        flexShrink: 0,
+        gap: isMobile ? 8 : 0
+      }}>
+        <div style={{ display: "flex", alignItems: "center", gap: 8, flexWrap: "wrap" }}>
+          <h1 style={{ fontSize: isMobile ? 17 : 19, fontWeight: 700, letterSpacing: "-0.03em", margin: 0, color: "#fff" }}>
             {profile?.name ?? selected}
           </h1>
           <span style={{
@@ -261,14 +275,14 @@ export default function ChartPanel({
           }}>
             {selected}
           </span>
-          {profile?.exchange && (
+          {profile?.exchange && !isMobile && (
             <span style={{ fontSize: 11, color: "#48484a" }}>· {profile.exchange}</span>
           )}
         </div>
 
         {livePrice ? (
-          <div style={{ textAlign: "right" }}>
-            <div style={{ fontSize: 24, fontWeight: 700, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
+          <div style={{ textAlign: isMobile ? "left" : "right" }}>
+            <div style={{ fontSize: isMobile ? 20 : 24, fontWeight: 700, letterSpacing: "-0.03em", fontVariantNumeric: "tabular-nums", color: "#fff" }}>
               ${livePrice.price.toFixed(2)}
             </div>
             <div style={{ fontSize: 12, fontWeight: 500, color: isUp ? "#30d158" : "#ff453a", marginTop: 1 }}>
@@ -279,6 +293,7 @@ export default function ChartPanel({
           <div style={{ fontSize: 12, color: "#48484a" }}>Loading…</div>
         )}
       </div>
+
 
       {/* ── Chart card ── */}
       <div style={{

@@ -1,7 +1,7 @@
 import React from "react";
 import { useStockData } from "../../hooks/useStockData";
 
-export default function Fundamentals({ selected, livePrice, isInWatchlist, onAdd, onRemove }) {
+export default function Fundamentals({ selected, livePrice, isInWatchlist, onAdd, onRemove, isMobile }) {
   const { quote, profile, metrics, loading, error } = useStockData(selected);
 
   const displayPrice = livePrice ?? (quote
@@ -27,12 +27,15 @@ export default function Fundamentals({ selected, livePrice, isInWatchlist, onAdd
 
   return (
     <aside style={{
-      padding: "18px 14px",
+      padding: isMobile ? "0px" : "18px 14px",
       display: "flex", flexDirection: "column", gap: 10,
-      height: "100%", overflow: "hidden",
+      height: isMobile ? "auto" : "100%", 
+      overflow: isMobile ? "visible" : "hidden",
       boxSizing: "border-box",
-      background: "#0b0b0c",
+      background: isMobile ? "transparent" : "#0b0b0c",
+      borderLeft: isMobile ? "none" : "1px solid #1c1c1e",
     }}>
+
 
       <div style={{
         fontSize: 10, textTransform: "uppercase", letterSpacing: "0.1em",

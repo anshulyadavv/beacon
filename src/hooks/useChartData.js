@@ -16,9 +16,9 @@ export function useChartData(ticker, timeframe) {
     setData([]);
 
     fetchCandles(ticker, timeframe)
-      .then((closes) => {
+      .then((payload) => {
         if (cancelled) return;
-        setData(closes);
+        setData(payload);
       })
       .catch((err) => {
         if (cancelled) return;

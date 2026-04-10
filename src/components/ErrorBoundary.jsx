@@ -15,34 +15,39 @@ export default class ErrorBoundary extends React.Component {
       return (
         <div style={{
           position: "fixed", inset: 0,
-          background: "#0b0b0c", color: "#fff",
-          fontFamily: "-apple-system, BlinkMacSystemFont, sans-serif",
+          background: "var(--bg-deep)", color: "var(--text-primary)",
+          fontFamily: "var(--font-apple)",
           display: "flex", flexDirection: "column",
-          alignItems: "center", justifyContent: "center", gap: 16,
-          padding: 32,
+          alignItems: "center", justifyContent: "center", gap: 24,
+          padding: 32, zIndex: 9999
         }}>
-          <div style={{ fontSize: 13, color: "#ff453a", fontWeight: 600 }}>
-            Something went wrong
+          <div style={{ 
+            background: "rgba(255, 69, 58, 0.1)", 
+            padding: "16px", borderRadius: "16px",
+            border: "1px solid rgba(255, 69, 58, 0.2)",
+            color: "var(--error)", fontWeight: 700, fontSize: "1.2rem"
+          }}>
+            Critical System Error
           </div>
           <pre style={{
-            fontSize: 12, color: "#8e8e93", background: "#1c1c1e",
-            padding: "16px 20px", borderRadius: 12, maxWidth: 600,
+            fontSize: 12, color: "var(--text-secondary)", background: "rgba(0,0,0,0.3)",
+            padding: "20px", borderRadius: 16, maxWidth: 600,
             whiteSpace: "pre-wrap", wordBreak: "break-word",
-            border: "1px solid #2c2c2e",
+            border: "1px solid var(--border-subtle)",
+            fontFamily: "'SF Mono', monospace"
           }}>
             {this.state.error.message}
-            {"\n\n"}
-            {this.state.error.stack?.split("\n").slice(0, 6).join("\n")}
           </pre>
           <button
-            onClick={() => this.setState({ error: null })}
+            onClick={() => { window.location.href = "/"; }}
             style={{
-              background: "rgba(255,255,255,0.06)", border: "1px solid #2c2c2e",
-              color: "#fff", padding: "8px 20px", borderRadius: 8,
-              fontSize: 13, cursor: "pointer", fontFamily: "inherit",
+              background: "var(--accent-blue)", border: "none",
+              color: "#fff", padding: "12px 24px", borderRadius: 12,
+              fontSize: 14, fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+              boxShadow: "0 4px 12px rgba(0, 113, 227, 0.3)"
             }}
           >
-            Try again
+            Return to Safety
           </button>
         </div>
       );

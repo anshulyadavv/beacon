@@ -141,11 +141,36 @@ export async function fetchCandles(ticker, timeframe) {
   if (!res.ok) throw new Error(`Chart fetch failed: ${res.status}`);
   const data = await res.json();
 
-  const closes = data?.chart?.result?.[0]?.indicators?.quote?.[0]?.close ?? [];
-  const filtered = closes.filter((v) => v != null);
-  if (filtered.length < 2) throw new Error("no_data");
+  const result = data?.chart?.result?.[0] ?? {};
+  const timestamps = result.timestamp ?? [];
+  const quote = result.indicators?.quote?.[0] ?? {};
+  
+  const closes = quote.close ?? [];
+  const volumes = quote.volume ?? [];
+  const opens = quote.open ?? [];
+  const highs = quote.high ?? [];
+  const lows = quote.low ?? [];
 
-  return setCache(cacheKey, filtered);
+  // Map to format required by lightweight-charts
+  const payload = timestamps.map((ts, i) => {
+    // If interval is >= 1D, format as 'YYYY-MM-DD', otherwise use Unix timestamp in seconds
+    const time = cfg.range === '1d' || cfg.range === '5d' ? ts : new Date(ts * 1000).toISOString().split('T')[0];
+    
+    return {
+      time: ts, // lightweight-charts accepts UNIX timestamps (seconds) for intraday data
+      open: opens[i],
+      high: highs[i],
+      low: lows[i],
+      close: closes[i],
+      volume: volumes[i] ?? 0,
+      value: closes[i] // For line series
+    };
+  }).filter(v => v.close != null && v.open != null && v.high != null && v.low != null);
+
+  if (payload.length < 2) throw new Error("no_data");
+
+
+  return setCache(cacheKey, payload);
 }
 
 // ─── Search (Migrated to Yahoo Finance) ───────────────────────────────────────
