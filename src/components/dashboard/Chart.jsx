@@ -1,5 +1,5 @@
 import React, { useEffect, useRef, useState, useMemo } from 'react';
-import { createChart, ColorType } from 'lightweight-charts';
+import { createChart, ColorType, CandlestickSeries, HistogramSeries } from 'lightweight-charts';
 import { useChartData } from '../../hooks/useChartData';
 
 export default function Chart({ ticker, timeframe }) {
@@ -57,7 +57,7 @@ export default function Chart({ ticker, timeframe }) {
     });
 
     // Add main candlestick series
-    const candlestickSeries = chart.addCandlestickSeries({
+    const candlestickSeries = chart.addSeries(CandlestickSeries, {
       upColor: '#30d158',
       downColor: '#ff453a',
       borderVisible: false,
@@ -66,7 +66,7 @@ export default function Chart({ ticker, timeframe }) {
     });
 
     // Add volume series as histogram
-    const volumeSeries = chart.addHistogramSeries({
+    const volumeSeries = chart.addSeries(HistogramSeries, {
       color: '#26a69a',
       priceFormat: {
         type: 'volume',
